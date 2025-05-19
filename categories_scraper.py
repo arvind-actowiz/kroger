@@ -64,6 +64,14 @@ def scrape_categories(driver, page_url):
                 for subcat in subcategories:
                     if "shop all" in subcat.text.lower():
                         continue
+                    
+                    # Check if URL contains any integers
+                    # Why? if a URL doesn't contain any integers, it probably is of group type page (we're scraping for direct subcategory pages only)
+                    contains_int = any(c.isdigit() for c in subcat.get_attribute('href'))
+
+                    if not contains_int:
+                        continue
+
                     print("Subcategory name: ", subcat.text)
                     print("Subcategory link: ", subcat.get_attribute("href"))
 
