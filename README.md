@@ -12,6 +12,23 @@ CREATE TABLE categories (
     category_url VARCHAR(255) NOT NULL,
     STATUS ENUM('pending', 'done') NOT NULL DEFAULT 'pending'
 );
+
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    UPC VARCHAR(64),
+    URL TEXT,
+    NAME VARCHAR(255),
+    categories JSON,
+    image TEXT,
+    store_id VARCHAR(64),
+    store_location VARCHAR(255),
+    price VARCHAR(10),
+    mrp VARCHAR(10),
+    availability VARCHAR(32) DEFAULT 'in stock',
+    keyword VARCHAR(255),
+    size VARCHAR(64),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ## Setup Instructions
