@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 from typing import List, Dict, Optional
+import json
 
 
 class DatabaseManager:
@@ -84,4 +85,59 @@ class DatabaseManager:
         except Error as e:
             self.connection.rollback()
             print(f"Category insertion failed: {e}")
+            raise
+    
+
+    def get_pending_categories(self) -> List[Dict]:
+        """Fetch categories that haven't been processed yet"""
+        self.cursor.execute("""
+            SELECT id, category_name, category_url
+            FROM categories
+            WHERE status IS NULL OR status != 'done'
+        """)
+        return self.cursor.fetchall()
+
+    def insert_products(self, products: List[Dict]):
+        """
+        Insert scraped product details into the database.
+
+        Args:
+            products: List of product dictionaries with keys:
+                - UPC
+                - URL
+                - name
+                - categories (list, stored as JSON)
+                - image
+                - storeId
+                - storeLocation
+                - price
+                - mrp
+                - availability
+                - keyword
+                - size
+        """
+        try:
+            insert_query = """
+                INSERT INTO products (
+                    upc, url, name, categories, image, store_id,
+                    store_location, price, mrp, availability,
+                    keyword, size
+                ) VALUES (
+                    %(UPC)s, %(URL)s, %(name)s, %(categories)s, %(image)s,
+                    %(storeId)s, %(storeLocation)s, %(price)s, %(mrp)s,
+                    %(availability)s, %(keyword)s, %(size)s
+                )
+            """
+
+            # Convert `categories` list to JSON string before insert
+            for product in products:
+                product["categories"] = json.dumps(product.get("categories", []))
+
+            self.cursor.executemany(insert_query, products)
+            self.connection.commit()
+            print(f"Inserted/updated {len(products)} products")
+
+        except Error as e:
+            self.connection.rollback()
+            print(f"Product insertion failed: {e}")
             raise
